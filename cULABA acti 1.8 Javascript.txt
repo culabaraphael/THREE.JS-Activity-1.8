@@ -1,0 +1,48 @@
+import './style.css';
+import * as THREE from 'three';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+import gsap from 'gsap';
+import * as dat from 'lil-gui';
+
+// Scene, Camera, Renderer
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 100);
+camera.position.set(0, 1, 5);
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setSize(window.innerWidth, window.innerHeight);
+document.body.appendChild(renderer.domElement);
+
+// OrbitControls
+const controls = new OrbitControls(camera, renderer.domElement);
+
+// Cube
+const parameters = {
+  color: 0xff0000, // Initial color of the cube
+  spin: () => {
+    gsap.to(mesh.rotation, { duration: 1, y: mesh.rotation.y + Math.PI * 2 });
+  },
+};
+const geometry = new THREE.BoxGeometry();
+const material = new THREE.MeshBasicMaterial({ color: parameters.color });
+const mesh = new THREE.Mesh(geometry, material);
+scene.add(mesh);
+
+// Light
+const light = new THREE.PointLight(0xffffff, 1, 100);
+light.position.set(10, 10, 10);
+scene.add(light);
+
+// Debug Panel (lil-gui)
+const gui = new dat.GUI();
+gui.add(mesh.position, 'y', -3, 3, 0.01).name('Elevation'); // Adjust cube's Y position
+gui.add(material, 'wireframe').name('Wireframe'); // Toggle wireframe
+gui.addColor(parameters, 'color').onChange(() => material.color.set(parameters.color)); // Color picker
+gui.add(parameters, 'spin').name('Spin Cube'); // Spin button
+
+// Animation Loop
+function animate() {
+  controls.update();
+  renderer.render(scene, camera);
+  requestAnimationFrame(animate);
+}
+animate();
